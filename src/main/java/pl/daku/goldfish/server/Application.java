@@ -23,9 +23,12 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     @Configuration
-    @EnableNeo4jRepositories("pl.daku.goldfish.server.model")
-
+    @EnableNeo4jRepositories("pl.daku.goldfish.server.repository")
     static class ApplicationConfig extends Neo4jConfiguration implements CommandLineRunner {
+
+        public ApplicationConfig() {
+            setBasePackage("pl.daku.goldfish.server");
+        }
 
         @Bean
         GraphDatabaseService graphDatabaseService() {
@@ -46,14 +49,14 @@ public class Application {
 
                 ServerConfigurator config = new ServerConfigurator(api);
                 config.configuration()
-                        .addProperty(Configurator.WEBSERVER_ADDRESS_PROPERTY_KEY, "127.0.0.1");
+                        .addProperty(Configurator.WEBSERVER_ADDRESS_PROPERTY_KEY, "0.0.0.0");
                 config.configuration()
                         .addProperty(Configurator.WEBSERVER_PORT_PROPERTY_KEY, "8686");
 
                 neoServerBootstrapper = new WrappingNeoServerBootstrapper(api, config);
                 neoServerBootstrapper.start();
-            } catch(Exception e) {
-                log.error("Neo4j browser doesn't boot",e);
+            } catch (Exception e) {
+                log.error("Neo4j browser doesn't boot", e);
             }
         }
     }
