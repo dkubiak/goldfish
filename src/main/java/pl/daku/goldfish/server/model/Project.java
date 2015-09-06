@@ -1,12 +1,13 @@
 package pl.daku.goldfish.server.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-
-import java.util.Set;
 
 @NodeEntity
 public class Project {
@@ -19,6 +20,24 @@ public class Project {
     @RelatedTo(type = "CONTAINS", direction = Direction.INCOMING)
     @Fetch
     public Set<Module> modules;
+
+    public void containModule(Module module) {
+        if (modules == null) {
+            modules = new HashSet<>();
+        }
+        modules.add(module);
+    }
+
+    public void removeModule(Module module) {
+        if (modules == null) {
+            modules = new HashSet<>();
+        }
+        modules.remove(module);
+    }
+
+    public void removeAllModules() {
+        modules.clear();
+    }
 
     public static class Builder {
         private Long id;
@@ -41,13 +60,23 @@ public class Project {
             return this;
         }
 
+        public Builder withModules(Set<Module> modules) {
+            this.modules = modules;
+            return this;
+        }
+
         public Project build() {
             Project project = new Project();
             project.id = this.id;
             project.name = this.name;
             project.repository = this.repository;
+            project.modules = this.modules;
             return project;
         }
+    }
+
+    public Project copyWithouModules() {
+        return new Builder().withName(name).withRepository(repository).build();
     }
 
     public Long getId() {

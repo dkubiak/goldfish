@@ -6,4 +6,6 @@ import pl.daku.goldfish.server.model.Module;
 
 public interface ModuleRepository extends GraphRepository<Module> {
 
+    public Module findByGroupIdAndArtifactId(String groupId, String artifactId);
+
 }

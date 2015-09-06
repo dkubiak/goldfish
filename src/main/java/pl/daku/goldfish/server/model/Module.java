@@ -6,6 +6,7 @@ import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import java.util.Objects;
 import java.util.Set;
 
 @NodeEntity
@@ -18,7 +19,7 @@ public class Module {
 
     @RelatedTo(type = "USED_IN", direction = Direction.OUTGOING)
     @Fetch
-    public Set<Project> projects;
+    private Set<Project> projects;
 
     public static class Builder {
         private Long id;
@@ -49,6 +50,32 @@ public class Module {
             module.projects = this.projects;
             return module;
         }
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Module module = (Module) o;
+        return Objects.equals(groupId, module.groupId) &&
+                Objects.equals(artifactId, module.artifactId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupId, artifactId);
     }
 }
 
