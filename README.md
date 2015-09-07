@@ -1,5 +1,5 @@
 #Goldfish
-[![Build Status](https://travis-ci.org/dkubiak/goldfish-server.svg?branch=master)](https://travis-ci.org/dkubiak/goldfish-server)
+[![Build Status](https://travis-ci.org/dkubiak/goldfish.svg?branch=master)](https://travis-ci.org/dkubiak/goldfish)
 
 If your complexity between your projects is huge, use GoldFish.
 
