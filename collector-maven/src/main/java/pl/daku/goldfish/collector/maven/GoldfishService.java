@@ -6,8 +6,8 @@ import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.POST;
 
-public interface GoldfishEndpoint {
+public interface GoldfishService {
 
     @POST("/add/project")
-    void addProject(@Body Project project, Callback callback);
+    void addProject(@Body Project project, Callback<Project> callback);
 }
