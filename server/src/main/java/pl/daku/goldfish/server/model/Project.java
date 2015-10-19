@@ -3,6 +3,7 @@ package pl.daku.goldfish.server.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
@@ -76,7 +77,7 @@ public class Project {
     }
 
     public Project copyWithouModules() {
-        return new Builder().withName(name).withRepository(repository).build();
+        return new Builder().withId(id).withName(name).withRepository(repository).build();
     }
 
     public Long getId() {
@@ -93,6 +94,15 @@ public class Project {
 
     public Set<Module> getModules() {
         return modules;
+    }
+
+    @Override
+    public String toString() {
+        return "Project{" +
+                ", name='" + name + '\'' +
+                ", repository='" + repository + '\'' +
+                ", modules=" + modules +
+                '}';
     }
 }
 

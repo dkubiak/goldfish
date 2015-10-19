@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import pl.daku.goldfish.server.model.Module;
 import pl.daku.goldfish.server.model.Project;
 import pl.daku.goldfish.server.repository.ModuleRepository;
 import pl.daku.goldfish.server.repository.ProjectRepository;
 
 @RestController
+//TODO ADD require field
 public class DependenciesController {
 
     @Autowired
@@ -28,6 +28,9 @@ public class DependenciesController {
     @Autowired
     private GraphDatabase graphDatabase;
 
+    @Autowired
+    private DependenciesService dependenciesService;
+
     @RequestMapping(value = ReceiverRestURI.ADD_PROJECT, method = RequestMethod.PUT)
     @ResponseBody
     public ResponseEntity addProject(@RequestBody Project incomeProject) {
@@ -35,37 +38,15 @@ public class DependenciesController {
         Project response;
         HttpStatus responseStatus;
         try {
-            Project project = projectRepository
-                    .findByNameAndRepository(incomeProject.getName(), incomeProject.getRepository());
-
-            if (project == null) {
-                //It's new project
-                project = incomeProject.copyWithouModules();
-                responseStatus = HttpStatus.CREATED;
-            } else {
-                project.removeAllModules();
-                responseStatus = HttpStatus.OK;
-            }
-            final Project finalProject = project;
-            addOrUpdateModule(incomeProject, finalProject);
-            projectRepository.save(finalProject);
-            response = finalProject;
+            responseStatus = dependenciesService.isProject(incomeProject) ? HttpStatus.OK : HttpStatus.CREATED;
+            Project project = dependenciesService.buildProject(incomeProject);
+            project = dependenciesService.addModulesToProject(project, incomeProject.getModules());
+            project = dependenciesService.setProjectToEachModules(project);
+            dependenciesService.saveDependecies(project);
             tx.success();
         } finally {
             tx.close();
         }
-        return new ResponseEntity<Project>(response, responseStatus);
-    }
-
-    private void addOrUpdateModule(@RequestBody Project incomeProject, Project finalProject) {
-        incomeProject.getModules().forEach((module) -> {
-            Module existsModule = moduleRepository.findByGroupIdAndArtifactId(module.getGroupId(),
-                    module.getArtifactId());
-            if (existsModule != null) {
-                finalProject.containModule(existsModule);
-            } else {
-                finalProject.containModule(module);
-            }
-        });
+        return new ResponseEntity<String>("ok", responseStatus);
     }
 }

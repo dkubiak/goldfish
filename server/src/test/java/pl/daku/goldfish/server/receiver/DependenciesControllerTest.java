@@ -10,7 +10,6 @@ import org.apache.http.HttpStatus;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.neo4j.graphdb.Transaction;
@@ -110,6 +109,11 @@ public class DependenciesControllerTest {
 
             Assertions.assertThat(projectWithThreeModules.getModules()).usingElementComparatorOnFields("id")
                     .containsAll(projectWithTwoModules.getModules());
+
+            Set<Project> usedProject = moduleRepository.findByGroupIdAndArtifactId(buildModule(1).getGroupId(),
+                    buildModule(1).getArtifactId()).getProjects();
+            Assertions.assertThat(usedProject).hasSize(1);
+
         } finally {
             tx.success();
             tx.close();
