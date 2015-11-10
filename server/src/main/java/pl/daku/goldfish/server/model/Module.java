@@ -1,14 +1,10 @@
 package pl.daku.goldfish.server.model;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -21,15 +17,8 @@ public class Module {
     private String groupId;
     private String artifactId;
 
-    @RelatedTo(type = "USED_IN", direction = Direction.OUTGOING)
-    @Fetch
-    private Set<Project> projects;
-
-    public void usedInProject(Project project) {
-        if (projects == null) {
-            projects = new HashSet<>();
-        }
-        projects.add(project);
+    public Long getId() {
+        return id;
     }
 
     public static class Builder {
@@ -58,7 +47,6 @@ public class Module {
             module.id = this.id;
             module.groupId = this.groupId;
             module.artifactId = this.artifactId;
-            module.projects = this.projects;
             return module;
         }
     }
@@ -69,10 +57,6 @@ public class Module {
 
     public String getArtifactId() {
         return artifactId;
-    }
-
-    public Set<Project> getProjects() {
-        return projects;
     }
 
     @Override
@@ -92,11 +76,11 @@ public class Module {
     @Override
     public String toString() {
         return "Module{" +
-                "groupId='" + groupId + '\'' +
+                "id=" + id +
+                ", groupId='" + groupId + '\'' +
                 ", artifactId='" + artifactId + '\'' +
                 '}';
     }
-
 }
 
 

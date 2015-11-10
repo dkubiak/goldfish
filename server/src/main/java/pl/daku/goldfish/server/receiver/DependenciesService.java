@@ -4,7 +4,9 @@ import static java.util.Optional.ofNullable;
 
 import java.util.Set;
 
+import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.core.GraphDatabase;
 import org.springframework.stereotype.Component;
 
 import pl.daku.goldfish.server.model.Module;
@@ -21,35 +23,56 @@ public class DependenciesService {
     @Autowired
     ModuleRepository moduleRepository;
 
+    @Autowired
+    private GraphDatabase graphDatabase;
+
     public Project buildProject(Project project) {
         return ofNullable(projectRepository.findByNameAndRepository(project.getName(), project.getRepository()))
-                .orElse(project);
+                .orElse(project)
+                .copyWithouModulesAndDependecies();
     }
 
     public Project addModulesToProject(Project project, Set<Module> newModules) {
-        Project finalProject = project.copyWithouModules();
-        newModules.stream()
-                .forEach(m -> {
-                    finalProject.containModule(
-                            ofNullable(
-                                    moduleRepository.findByGroupIdAndArtifactId(m.getGroupId(), m.getArtifactId()))
-                                    .orElse(m));
-                });
-        return finalProject;
+        Transaction tx = graphDatabase.beginTx();
+        try {
+            newModules.stream()
+                    .forEach(m -> addModules(project, m));
+            projectRepository.save(project);
+            tx.success();
+        } finally {
+            tx.close();
+        }
+        return project;
     }
 
-    public Project setProjectToEachModules(Project project) {
-        project.getModules().stream()
-                .forEach(m -> m.usedInProject(project));
+    public Project addDependeciesToProject(Project project, Set<Module> newDependecies) {
+        Transaction tx = graphDatabase.beginTx();
+        try {
+            newDependecies.stream()
+                    .forEach(d -> addDependecies(project, d));
+            projectRepository.save(project);
+            tx.success();
+        } finally {
+            tx.close();
+        }
         return project;
+    }
+
+    private void addModules(Project project, Module m) {
+        project.containModule(findModuleIntoRepository(m));
+    }
+
+    private void addDependecies(Project project, Module d) {
+        project.usedDependencie(findModuleIntoRepository(d));
+    }
+
+    private Module findModuleIntoRepository(Module d) {
+        return ofNullable(moduleRepository.findByGroupIdAndArtifactId(d.getGroupId(), d.getArtifactId()))
+                .orElse(d);
     }
 
     public Boolean isProject(Project project) {
         return projectRepository.findByNameAndRepository(project.getName(),
                 project.getRepository()) != null ? true : false;
-    }
-
-    public void saveDependecies(Project project) {
-        projectRepository.save(project);
     }
 }

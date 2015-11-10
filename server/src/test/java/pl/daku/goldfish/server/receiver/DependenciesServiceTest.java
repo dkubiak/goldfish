@@ -1,18 +1,20 @@
 package pl.daku.goldfish.server.receiver;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
-import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.internal.util.collections.Sets;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.neo4j.graphdb.Transaction;
+import org.springframework.data.neo4j.core.GraphDatabase;
 
 import pl.daku.goldfish.server.model.Module;
 import pl.daku.goldfish.server.model.Project;
@@ -24,6 +26,7 @@ public class DependenciesServiceTest {
 
     public static final String REPO_1 = "Repo1";
     public static final String PROJECT_1 = "Project1";
+
     @InjectMocks
     DependenciesService dependenciesService;
 
@@ -33,6 +36,9 @@ public class DependenciesServiceTest {
     @Mock
     ModuleRepository moduleRepository;
 
+    @Mock
+    GraphDatabase graphDatabase;
+
     @Test
     public void shouldAddNewProjectIfNotExists() {
         //given
@@ -40,10 +46,7 @@ public class DependenciesServiceTest {
                 new Module.Builder().withArtifactId("a1").withGroupId("g1").build(),
                 new Module.Builder().withArtifactId("a2").withGroupId("g2").build());
 
-        Project project = new Project.Builder()
-                .withName(PROJECT_1)
-                .withRepository(REPO_1)
-                .withModules(modules).build();
+        Project project = getProjectOne(modules);
 
         when(projectRepository.findByNameAndRepository(PROJECT_1, REPO_1)).thenReturn(null);
         //when
@@ -55,21 +58,14 @@ public class DependenciesServiceTest {
     }
 
     @Test
-    public void shouldNotAddNewProjectBecauseExists() {
+    public void shouldNotAddNewProjectAlreadyExists() {
         //given
         final Set<Module> modules = Sets.newSet(
                 new Module.Builder().withArtifactId("a1").withGroupId("g1").build(),
                 new Module.Builder().withArtifactId("a2").withGroupId("g2").build());
 
-        Project project = new Project.Builder()
-                .withName(PROJECT_1)
-                .withRepository(REPO_1)
-                .withModules(modules).build();
-
-        Project findProject = new Project.Builder()
-                .withName(PROJECT_1)
-                .withRepository(REPO_1)
-                .withModules(modules).build();
+        Project project = getProjectOne(modules);
+        Project findProject = getProjectOne(modules);
 
 
         when(projectRepository.findByNameAndRepository(PROJECT_1, REPO_1)).thenReturn(findProject);
@@ -91,10 +87,7 @@ public class DependenciesServiceTest {
         final Set<Module> oldModules = Sets.newSet(module1, module2Old);
         final Set<Module> newModules = Sets.newSet(module3, module2);
 
-        Project project = new Project.Builder()
-                .withName(PROJECT_1)
-                .withRepository(REPO_1)
-                .withModules(oldModules).build();
+        Project project = getProjectOne(oldModules).copyWithouModulesAndDependecies();
 
         when(moduleRepository.findByGroupIdAndArtifactId("g2", "g2")).thenReturn(module2Old);
         when(moduleRepository.findByGroupIdAndArtifactId("g3", "g3")).thenReturn(module3);
@@ -105,27 +98,29 @@ public class DependenciesServiceTest {
         //then;
         assertThat(projectWithNewModules.getModules()).hasSize(2);
         assertThat(projectWithNewModules.getModules()).containsExactly(module3, module2);
+        assertThat(projectWithNewModules.getModules()
+                .stream()
+                .filter(m -> m.getArtifactId() == "a2")
+                .filter(m -> m.getGroupId() == "g2")
+                .findFirst().get().getId()).isNull();
     }
 
     @Test
-    public void shouldEachModulesUseInTheSameProject() {
+    public void shoulAddDependecies() {
         //given
-        final Set<Module> modules = Sets.newSet(
+        final Set<Module> dependecies = Sets.newSet(
                 new Module.Builder().withArtifactId("a1").withGroupId("g1").build(),
                 new Module.Builder().withArtifactId("a2").withGroupId("g2").build());
+        final Project project = getProjectOneWithDefaultModules();
 
-        Project project = new Project.Builder()
-                .withName(PROJECT_1)
-                .withRepository(REPO_1)
-                .withModules(modules).build();
         //when
-        dependenciesService.setProjectToEachModules(project);
+        final Project projectWithDependecies = dependenciesService.addDependeciesToProject(project, dependecies);
         //then
-        project.getModules().stream().forEach(m -> Assertions.assertThat(m.getProjects()).contains(project));
+        assertThat(projectWithDependecies.getDependecies()).hasSameElementsAs(dependecies);
     }
 
     @Test
-    public void shouldReturnFalsePojectExist(){
+    public void shouldReturnFalsePojectExist() {
         //given
         Project project = new Project.Builder()
                 .withName(PROJECT_1)
@@ -133,8 +128,29 @@ public class DependenciesServiceTest {
 
         when(projectRepository.findByNameAndRepository(PROJECT_1, REPO_1)).thenReturn(project);
         //when
-        Assertions.assertThat(dependenciesService.isProject(project)).isTrue();
+        assertThat(dependenciesService.isProject(project)).isTrue();
 
     }
 
+    @Before
+    public void setUp() {
+        Mockito.when(graphDatabase.beginTx()).thenReturn(Mockito.mock(Transaction.class));
+    }
+
+    private Project getProjectOne(Set<Module> modules) {
+        return new Project.Builder()
+                .withName(PROJECT_1)
+                .withRepository(REPO_1)
+                .withModules(modules).build();
+    }
+
+    private Project getProjectOneWithDefaultModules() {
+        final Set<Module> modules = Sets.newSet(
+                new Module.Builder().withArtifactId("a1").withGroupId("g1").build(),
+                new Module.Builder().withArtifactId("a2").withGroupId("g2").build());
+        return new Project.Builder()
+                .withName(PROJECT_1)
+                .withRepository(REPO_1)
+                .withModules(modules).build();
+    }
 }

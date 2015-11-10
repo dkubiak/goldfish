@@ -1,13 +1,13 @@
 package pl.daku.goldfish.server.receiver;
 
 import static com.jayway.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.http.HttpStatus;
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,17 +66,15 @@ public class DependenciesControllerTest {
     }
 
     @Test
-    public void should_add_project_with_modules() {
-        Gson gson = new GsonBuilder().create();
-        String body = gson.toJson(prepareProjectWithModules("ProjectName", prepareModules(2)));
-        given().body(body).contentType(ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_CREATED);
+    public void should_add_project_with_modules_and_dependecies() {
+        //given
+        addAndSendProject("ProjectName", generateModules(2), generateDependencies(4));
         Transaction tx = graphDatabase.beginTx();
         try {
             Project project = projectRepository.findByNameAndRepository("ProjectName", "repo");
-            Assertions.assertThat(project.getId()).isNotNull();
-            Assertions.assertThat(project.getModules()).hasSize(2);
+            assertThat(project.getId()).isNotNull();
+            assertThat(project.getModules()).hasSize(2);
+            assertThat(project.getDependecies()).hasSize(4);
         } finally {
             tx.success();
             tx.close();
@@ -84,36 +82,27 @@ public class DependenciesControllerTest {
     }
 
     @Test
-    public void should_add_project_with_the_same_modules() {
-        Gson gson = new GsonBuilder().create();
-        String body = gson.toJson(prepareProjectWithModules("Project1Name", prepareModules(2)));
-        given().body(body).contentType(ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_CREATED);
-
-        body = gson.toJson(prepareProjectWithModules("Project2Name", prepareModules(3)));
-        given().body(body).contentType(ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_CREATED);
+    public void should_add_project_with_the_same_modules_and_dependencies() {
+        //given
+        addAndSendProject("Project1Name", generateModules(2), generateDependencies(4));
+        addAndSendProject("Project2Name", generateModules(3), generateDependencies(8));
 
         Transaction tx = graphDatabase.beginTx();
-        Project projectWithTwoModules = null;
-        Project projectWithThreeModules = null;
         try {
-            projectWithTwoModules = projectRepository.findByNameAndRepository("Project1Name", "repo");
-            projectWithThreeModules = projectRepository.findByNameAndRepository("Project2Name", "repo");
+            Project projectWithTwoModules = projectRepository.findByNameAndRepository("Project1Name", "repo");
+            Project projectWithThreeModules = projectRepository.findByNameAndRepository("Project2Name", "repo");
 
             //then
-            Assertions.assertThat(projectWithTwoModules.getModules()).hasSize(2);
-            Assertions.assertThat(projectWithThreeModules.getModules()).hasSize(3);
+            assertThat(projectWithTwoModules.getModules()).hasSize(2);
+            assertThat(projectWithThreeModules.getModules()).hasSize(3);
 
-            Assertions.assertThat(projectWithThreeModules.getModules()).usingElementComparatorOnFields("id")
+            assertThat(projectWithTwoModules.getDependecies()).hasSize(4);
+            assertThat(projectWithThreeModules.getDependecies()).hasSize(8);
+
+            assertThat(projectWithThreeModules.getModules()).usingElementComparatorOnFields("id")
                     .containsAll(projectWithTwoModules.getModules());
-
-            Set<Project> usedProject = moduleRepository.findByGroupIdAndArtifactId(buildModule(1).getGroupId(),
-                    buildModule(1).getArtifactId()).getProjects();
-            Assertions.assertThat(usedProject).hasSize(1);
-
+            assertThat(projectWithThreeModules.getDependecies()).usingElementComparatorOnFields("id")
+                    .containsAll(projectWithTwoModules.getDependecies());
         } finally {
             tx.success();
             tx.close();
@@ -122,32 +111,21 @@ public class DependenciesControllerTest {
 
     @Test
     public void should_update_project_when_exists_add_new_module() {
-        Gson gson = new GsonBuilder().create();
-        given().body(gson.toJson(prepareProjectWithModules("Project1Name", prepareModules(2)))).contentType(
-                ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_CREATED);
-        given().body(gson.toJson(prepareProjectWithModules("Project2Name", prepareModules(2)))).contentType(
-                ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_CREATED);
-        given().body(gson.toJson(prepareProjectWithModules("Project1Name", prepareModules(3)))).contentType(
-                ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_OK);
+        //given
+        addAndSendProject("Project1Name", generateModules(2), generateModules(4));
+        addAndSendProject("Project2Name", generateModules(2), generateModules(2));
+        updateAndSendProject("Project1Name", generateModules(3));
 
         Transaction tx = graphDatabase.beginTx();
-        Project projectWithTwoModules = null;
-        Project projectWithThreeModules = null;
         try {
-            projectWithThreeModules = projectRepository.findByNameAndRepository("Project1Name", "repo");
-            projectWithTwoModules = projectRepository.findByNameAndRepository("Project2Name", "repo");
+            Project projectWithThreeModules = projectRepository.findByNameAndRepository("Project1Name", "repo");
+            Project projectWithTwoModules = projectRepository.findByNameAndRepository("Project2Name", "repo");
 
             //then
-            Assertions.assertThat(projectWithTwoModules.getModules()).hasSize(2);
-            Assertions.assertThat(projectWithThreeModules.getModules()).hasSize(3);
+            assertThat(projectWithTwoModules.getModules()).hasSize(2);
+            assertThat(projectWithThreeModules.getModules()).hasSize(3);
 
-            Assertions.assertThat(projectWithThreeModules.getModules()).usingElementComparatorOnFields("id")
+            assertThat(projectWithThreeModules.getModules()).usingElementComparatorOnFields("id")
                     .containsAll(projectWithTwoModules.getModules());
         } finally {
             tx.success();
@@ -155,35 +133,23 @@ public class DependenciesControllerTest {
         }
     }
 
-
     @Test
-    public void should_update_project_when_exists_remove_module() {
-        Gson gson = new GsonBuilder().create();
-        given().body(gson.toJson(prepareProjectWithModules("Project1Name", prepareModules(3)))).contentType(
-                ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_CREATED);
-        given().body(gson.toJson(prepareProjectWithModules("Project2Name", prepareModules(2)))).contentType(
-                ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_CREATED);
-        given().body(gson.toJson(prepareProjectWithModules("Project1Name", prepareModules(2)))).contentType(
-                ContentType.JSON)
-                .when().put(ReceiverRestURI.ADD_PROJECT)
-                .then().statusCode(HttpStatus.SC_OK);
+    public void should_update_exists_project_with_modules() {
+        //given
+        addAndSendProject("Project1Name", generateModules(3), generateModules(3));
+        addAndSendProject("Project2Name", generateModules(2), generateModules(3));
+        updateAndSendProject("Project1Name", generateModules(2));
 
         Transaction tx = graphDatabase.beginTx();
-        Project projectOneWithTwoTheSameModules = null;
-        Project projectTwoWithTwoTheSameModules = null;
         try {
-            projectOneWithTwoTheSameModules = projectRepository.findByNameAndRepository("Project1Name", "repo");
-            projectTwoWithTwoTheSameModules = projectRepository.findByNameAndRepository("Project2Name", "repo");
+            Project projectOneWithTwoTheSameModules = projectRepository.findByNameAndRepository("Project1Name", "repo");
+            Project projectTwoWithTwoTheSameModules = projectRepository.findByNameAndRepository("Project2Name", "repo");
 
             //then
-            Assertions.assertThat(projectOneWithTwoTheSameModules.getModules()).hasSize(2);
-            Assertions.assertThat(projectTwoWithTwoTheSameModules.getModules()).hasSize(2);
+            assertThat(projectOneWithTwoTheSameModules.getModules()).hasSize(2);
+            assertThat(projectTwoWithTwoTheSameModules.getModules()).hasSize(2);
 
-            Assertions.assertThat(projectOneWithTwoTheSameModules.getModules()).usingElementComparatorOnFields("id")
+            assertThat(projectOneWithTwoTheSameModules.getModules()).usingElementComparatorOnFields("id")
                     .containsAll(projectTwoWithTwoTheSameModules.getModules());
         } finally {
             tx.success();
@@ -191,11 +157,41 @@ public class DependenciesControllerTest {
         }
     }
 
+    private Gson addAndSendProject(String projectName, Set<Module> modules, Set<Module> dependecies) {
+        Gson gson = new GsonBuilder().create();
+        String body = gson.toJson(prepareProjectWithModulesAndDependencies(projectName, modules, dependecies));
+        given().body(body).contentType(ContentType.JSON)
+                .when().put(ReceiverRestURI.ADD_PROJECT)
+                .then().statusCode(HttpStatus.SC_CREATED);
+        return gson;
+    }
+
+    private Gson updateAndSendProject(String projectName, Set<Module> modules) {
+        Gson gson = new GsonBuilder().create();
+        String body = gson.toJson(prepareProjectWithModules(projectName, modules));
+        given().body(body).contentType(ContentType.JSON)
+                .when().put(ReceiverRestURI.ADD_PROJECT)
+                .then().statusCode(HttpStatus.SC_OK);
+        return gson;
+    }
+
     private Project prepareProjectWithModules(String projectName, Set<Module> modules) {
         return new Project.Builder().withName(projectName).withRepository("repo").withModules(modules).build();
     }
 
-    private Set<Module> prepareModules(int count) {
+    private Project prepareProjectWithModulesAndDependencies(String projectName, Set<Module> modules, Set<Module>
+            dependencies) {
+        return new Project.Builder().withName(projectName)
+                .withRepository("repo")
+                .withModules(modules)
+                .withDependecies(dependencies).build();
+    }
+
+    private Set<Module> generateDependencies(int count) {
+        return generateModules(count);
+    }
+
+    private Set<Module> generateModules(int count) {
         return IntStream.range(0, count).mapToObj(i -> buildModule(i)).collect(Collectors.<Module>toSet());
     }
 
