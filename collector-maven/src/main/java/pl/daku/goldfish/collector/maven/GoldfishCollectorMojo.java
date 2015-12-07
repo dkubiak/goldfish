@@ -1,8 +1,7 @@
 package pl.daku.goldfish.collector.maven;
 
 
-import static java.util.stream.Collectors.toSet;
-
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -25,41 +24,40 @@ public class GoldfishCollectorMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 
-    @Parameter(property = "ServerURL", defaultValue = "http://localhost:8080")
+    @Parameter(property = "serverURL", defaultValue = "http://localhost:8080")
     private String serverURL;
+
+    @Parameter(property = "groupIdMask", defaultValue = "com.payu.")
+    private String groupIdMask;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        new GoldfishServiceManager(serverURL).addProject(getProjectStructure());
+        try {
+            new GoldfishServiceManager(serverURL).addProject(getProjectStructure());
+            getLog().info("Goldfish plugin finish with SUCCESS!");
+        } catch (Exception e) {
+            getLog().warn("Goldfish plugin failed!");
+            getLog().warn(e.getMessage() + " (more information run with +X)");
+            getLog().debug(e.getCause());
+        }
+
     }
 
-    private Project getProjectStructure() {
-        Set<Module> modules = project.getModules().stream()
-                .map(moduleArtifactId -> new Module.Builder()
-                        .withArtifactId(moduleArtifactId)
-                        .withGroupId(project.getGroupId()).build()
-                ).collect(toSet());
+    private Project getProjectStructure() throws Exception {
 
-        Set<Module> dependecies = project
-                .getDependencyManagement()
-                .getDependencies().stream()
-                .filter(d -> d.getGroupId().startsWith("com.payu."))
-                .map(d -> new Module.Builder()
-                        .withArtifactId(d.getArtifactId())
-                        .withGroupId(d.getGroupId()).build()).collect(toSet());
+        final ProjectReader projectReader = new ProjectReader(project);
+        final Set<Module> modules = projectReader.getModules();
 
         //Add parent as module
-        modules.add(new Module.Builder()
-                .withGroupId(project.getGroupId())
-                .withArtifactId(project.getArtifactId()).build());
+        modules.add(projectReader.getParent());
 
         Project projectStructure = new Project.Builder()
-                .withName(project.getGroupId() + ":" + project.getArtifactId())
-                .withRepository(project.getScm().getConnection())
+                .withName(projectReader.getName())
+                .withRepository(projectReader.getRepository())
                 .withModules(modules)
-                .withDependecies(dependecies).build();
+                .withDependecies(projectReader.getDependecies(Optional.ofNullable(groupIdMask))).build();
 
-        getLog().info("Project structure was prepared");
+        getLog().warn("Project structure was prepared!");
         getLog().info(projectStructure.toString());
 
         return projectStructure;

@@ -21,7 +21,7 @@ public class GoldfishServiceManagerTest {
     public WireMockRule wireMockRule = new WireMockRule(8089);
 
     @Test
-    public void should_add_project_and_recive_http_status_ok() {
+    public void should_add_project_and_recive_http_status_ok() throws GoldfishServiceException {
         //given
         stubFor(put(urlEqualTo("/project/add"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -34,5 +34,12 @@ public class GoldfishServiceManagerTest {
         //then
         WireMock.verify(1, putRequestedFor(urlEqualTo("/project/add"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8")));
+    }
+
+    @Test(expected = GoldfishServiceException.class)
+    public void should_thorw_exception_when_serwis_is_anavaible() throws GoldfishServiceException {
+        //when
+        new GoldfishServiceManager("http://localhost:8088")
+                .addProject(new Project.Builder().withName("1").build());
     }
 }

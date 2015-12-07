@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>pl.daku.goldfish.collector.it</groupId>
+    <artifactId>parent</artifactId>
+    <version>@project.version@</version>
+    <packaging>pom</packaging>
+
+    <scm>
+        <connection>URL</connection>
+    </scm>
+
+    <modules>
+        <module>module</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>pl.daku.goldfish.collector.it</groupId>
+                <artifactId>module</artifactId>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>pl.daku.goldfish</groupId>
+                <artifactId>collector-maven</artifactId>
+                <version>@project.version@</version>
+                <configuration>
+                    <serverURL>http://localhost:8089</serverURL>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.daku.goldfish.server.model.Project;
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
 
 public class GoldfishServiceManager {
 
@@ -18,11 +19,15 @@ public class GoldfishServiceManager {
         goldfishService = buildRestAdapter(serviceEndpoint).create(GoldfishService.class);
     }
 
-    public void addProject(Project project) {
-        goldfishService.addProject(project);
+    public void addProject(Project project) throws GoldfishServiceException {
+        try {
+            goldfishService.addProject(project);
+        } catch (RetrofitError e) {
+            throw new GoldfishServiceException("Connection problem with hoste: " + serviceEndpoint, e);
+        }
     }
 
     private RestAdapter buildRestAdapter(String serviceEndpoint) {
-        return new RestAdapter.Builder().setEndpoint(serviceEndpoint).setLogLevel(RestAdapter.LogLevel.FULL).build();
+        return new RestAdapter.Builder().setEndpoint(serviceEndpoint).build();
     }
 }
