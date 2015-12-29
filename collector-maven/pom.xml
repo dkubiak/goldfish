@@ -43,8 +43,8 @@
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <cloneAllFiles>true</cloneAllFiles>
                     <cloneClean>true</cloneClean>
-                    <preBuildHookScript>setup</preBuildHookScript>
-                    <postBuildHookScript>verify</postBuildHookScript>
+                    <preBuildHookScript>setup.bsh</preBuildHookScript>
+                    <postBuildHookScript>verify.groovy</postBuildHookScript>
                     <addTestClassPath>true</addTestClassPath>
                     <pomIncludes>
                         <pomInclude>*/pom.xml</pomInclude>
@@ -157,7 +157,37 @@
             <version>3.3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.jadler</groupId>
+            <artifactId>jadler-all</artifactId>
+            <version>1.2.0</version>
+            <scope>test</scope>
+        </dependency>
 
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>8.1.11.v20130520</version> <!-- Jetty 8 is the last JDK1.6 compatible version-->
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <version>8.1.13.v20130916</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <version>8.1.14.v20131031</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+            <version>8.1.18.v20150929</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
