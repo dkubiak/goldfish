@@ -3,7 +3,7 @@
         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>pl.daku.goldfish.collector.it</groupId>
-    <artifactId>module</artifactId>
+    <groupId>com.github.dkubiak</groupId>
+    <artifactId>module-it</artifactId>
     <version>@project.version@</version>
 </project>

@@ -3,8 +3,8 @@
         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>pl.daku.goldfish.collector.it</groupId>
-    <artifactId>parent</artifactId>
+    <groupId>com.github.dkubiak</groupId>
+    <artifactId>parent-it</artifactId>
     <version>@project.version@</version>
     <packaging>pom</packaging>
 
@@ -19,8 +19,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>pl.daku.goldfish.collector.it</groupId>
-                <artifactId>module</artifactId>
+                <groupId>com.github.dkubiak</groupId>
+                <artifactId>module-it</artifactId>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -28,7 +28,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>pl.daku.goldfish</groupId>
+                <groupId>com.github.dkubiak</groupId>
                 <artifactId>collector-maven</artifactId>
                 <version>@project.version@</version>
                 <configuration>

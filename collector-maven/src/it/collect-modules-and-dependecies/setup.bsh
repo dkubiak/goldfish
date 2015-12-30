@@ -1,4 +1,4 @@
-import pl.daku.goldfish.collector.maven.GoldfishServiceMock;
+import com.github.dkubiak.goldfish.collector.maven.GoldfishServiceMock;
 
 new GoldfishServiceMock().mockEndpointAddProject(85);
 
