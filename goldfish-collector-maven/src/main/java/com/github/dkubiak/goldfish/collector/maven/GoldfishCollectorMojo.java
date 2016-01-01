@@ -27,7 +27,7 @@ public class GoldfishCollectorMojo extends AbstractMojo {
     @Parameter(property = "serverURL", defaultValue = "http://localhost:8080")
     private String serverURL;
 
-    @Parameter(property = "groupIdMask", defaultValue = "com.payu.")
+    @Parameter(property = "groupIdMask")
     private String groupIdMask;
 
     @Override

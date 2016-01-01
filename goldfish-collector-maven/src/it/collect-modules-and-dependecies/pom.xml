@@ -29,7 +29,7 @@
         <plugins>
             <plugin>
                 <groupId>com.github.dkubiak</groupId>
-                <artifactId>collector-maven</artifactId>
+                <artifactId>goldfish-collector-maven</artifactId>
                 <version>@project.version@</version>
                 <configuration>
                     <serverURL>http://localhost:8089</serverURL>
