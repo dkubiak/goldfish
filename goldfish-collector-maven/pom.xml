@@ -75,7 +75,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.dkubiak</groupId>
-            <artifactId>server</artifactId>
+            <artifactId>goldfish-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
