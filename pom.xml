@@ -50,8 +50,8 @@
     </distributionManagement>
 
     <modules>
-        <module>server</module>
-        <module>collector-maven</module>
+        <module>goldfish-server</module>
+        <module>goldfish-collector-maven</module>
     </modules>
 
     <properties>
@@ -87,7 +87,6 @@
                             </execution>
                         </executions>
                     </plugin>
-
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -96,11 +95,9 @@
                         <configuration>
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <stagingProfileId>?????</stagingProfileId>
                             <autoReleaseAfterClose>false</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -113,7 +110,6 @@
                             </execution>
                         </executions>
                     </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
@@ -133,5 +129,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>
