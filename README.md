@@ -1,5 +1,6 @@
 #The Goldfish
 [![Build Status](https://travis-ci.org/dkubiak/goldfish.svg?branch=master)](https://travis-ci.org/dkubiak/goldfish)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.dkubiak/goldfish/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.dkubiak/goldfish)
 
 If your complexity between your projects is huge, use GoldFish.
 
