@@ -27,3 +27,7 @@ Relations between projects, appoint in real time, so you can track changes in de
 *serverURL - http://localhost:8089 is a default value.
 
 *groupIdMask - Artifacts with this groupId, will be collected. [default value all] 
+
+####How it work
+
+![alt text](http://i.imgur.com/SeyTuNn.png "")
