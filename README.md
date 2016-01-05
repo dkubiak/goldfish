@@ -24,9 +24,9 @@ Relations between projects, appoint in real time, so you can track changes in de
     ```
    * command line: ```mvn com.github.dkubiak:goldfish-collector-maven:1.0:run ``` 
 
-*serverURL - http://localhost:8089 is a default value.
+* serverURL - http://localhost:8089 is a default value.
 
-*groupIdMask - Artifacts with this groupId, will be collected. [default value all] 
+* groupIdMask - Artifacts with this groupId, will be collected. [default value all] 
 
 ####How it work
 
