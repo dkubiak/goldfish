@@ -20,16 +20,18 @@ Relations between projects, appoint in real time, so you can track changes in de
                     <artifactId>goldfish-collector-maven</artifactId>
                     <version>1.0</version>
                     <configuration>
-                        <serverURL>http://localhost:8089</serverURL>
+                        <serverURL>http://localhost:9000</serverURL>
                         <groupIdMask>com.github.</groupIdMask>
                     </configuration>
                 </plugin>
     ```
    * command line: ```mvn com.github.dkubiak:goldfish-collector-maven:1.0:run ``` 
 
-* serverURL - http://localhost:8089 is a default value.
+* serverURL - http://localhost:9000 is a default value.
 
 * groupIdMask - Artifacts with this groupId, will be collected. [default value all] 
+
+Neo4j browser - http://localhost:8686
 
 ####How it work
 
