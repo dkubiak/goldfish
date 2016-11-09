@@ -15,7 +15,7 @@
     <version>1.1-SNAPSHOT</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>The dependencies visualizer</description>
+    <description>The dependencies visualizer.</description>
     <url>https://github.com/dkubiak/goldfish</url>
 
     <licenses>
